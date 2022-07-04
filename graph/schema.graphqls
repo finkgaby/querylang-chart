@@ -1,0 +1,12 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type DeserializedQuery{
+    Query: String!
+}
+
+type Query {
+  deserialize(queryLang: String!): DeserializedQuery!
+}
+
