@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/nats-io/nats.go"
 	"log"
 	srv "querylang-chart/server"
@@ -14,6 +13,8 @@ const defaultPort = "8080"
 const (
 	subSubjectName = "QUERY.unserialized"
 	pubSubjectName = "QUERY.serialized"
+	streamName     = "QUERY"
+	streamSubjects = "QUERY.*"
 )
 
 type Query struct {
@@ -40,10 +41,14 @@ func main() {
 	log.Println("Creates JetStreamContext")
 	js, err := nc.JetStream()
 	checkErr(err)
+
+	createStream(js)
+
 	log.Printf("Create durable consumer monitor on subject:%q", subSubjectName)
 	js.Subscribe(subSubjectName, func(msg *nats.Msg) {
+		log.Printf("message incoming")
 		msg.Ack()
-		var query Query
+		var query string
 		err := json.Unmarshal(msg.Data, &query)
 		checkErr(err)
 		log.Printf("Subscriber fetched msg.Data:%s from subSubjectName:%q", string(msg.Data), msg.Subject)
@@ -53,11 +58,26 @@ func main() {
 	runtime.Goexit()
 }
 
-func reviewQuery(js nats.JetStreamContext, query Query) {
-	desQuery := srv.DeserializeQuery(query.query)
-	query.query = desQuery.Query
-	queryJSON, _ := json.Marshal(query.query)
-	_, err := js.Publish(fmt.Sprintf("(%s_%s)", pubSubjectName, query.subjectId), queryJSON)
+func createStream(js nats.JetStreamContext) {
+	log.Printf("DeleteStream old stream: %q", streamName)
+	js.DeleteStream(streamName)
+
+	stream, _ := js.StreamInfo(streamName)
+	if stream == nil {
+		log.Printf("creating new stream %q and subjects %q", streamName, streamSubjects)
+		_, err := js.AddStream(&nats.StreamConfig{
+			Name:     streamName,
+			Subjects: []string{streamSubjects},
+		})
+		checkErr(err)
+	}
+}
+
+func reviewQuery(js nats.JetStreamContext, query string) {
+	desQuery := srv.DeserializeQuery(query)
+	query = desQuery.Query
+	queryJSON, _ := json.Marshal(query)
+	_, err := js.Publish(pubSubjectName, queryJSON)
 	checkErr(err)
 	log.Printf("Published queryJSON:%s to subjectName:%q", string(queryJSON), pubSubjectName)
 }
