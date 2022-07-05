@@ -5,6 +5,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"log"
 	srv "querylang-chart/server"
+	"querylang-chart/server/commons"
 	"runtime"
 )
 
@@ -37,8 +38,7 @@ func main() {
 	//log.Fatal(http.ListenAndServe(":"+port, nil))
 
 	log.Println("Connect to NATS")
-	//nc, _ := nats.Connect("localhost:4222")
-	nc, _ := nats.Connect("nats:4222")
+	nc, _ := nats.Connect(commons.NatsUrl)
 	log.Println("Creates JetStreamContext")
 	js, err := nc.JetStream()
 	checkErr(err)
