@@ -7,6 +7,9 @@ help:
 	@echo "install    : To install the querylang-chart subchart"
 	@echo "uninstall  : To uninstall the querylang-chart subchart"
 
+build:
+	nerdctl build --namespace k8s.io  -t querylang:v1.1 .
+
 ## Installs Charts to kubernetes cluster
 install:
 	$(HELM) install --create-namespace -n $(NAMESPACE) $(NAME) .
