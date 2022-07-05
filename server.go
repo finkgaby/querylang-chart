@@ -37,7 +37,8 @@ func main() {
 	//log.Fatal(http.ListenAndServe(":"+port, nil))
 
 	log.Println("Connect to NATS")
-	nc, _ := nats.Connect("demo.nats.io")
+	//nc, _ := nats.Connect("localhost:4222")
+	nc, _ := nats.Connect("nats:4222")
 	log.Println("Creates JetStreamContext")
 	js, err := nc.JetStream()
 	checkErr(err)
