@@ -18,8 +18,8 @@ const (
 )
 
 type Query struct {
-	query     string
-	subjectId string
+	Query     string
+	SubjectId string
 }
 
 func main() {
@@ -48,7 +48,7 @@ func main() {
 	js.Subscribe(subSubjectName, func(msg *nats.Msg) {
 		log.Printf("message incoming")
 		msg.Ack()
-		var query string
+		var query Query
 		err := json.Unmarshal(msg.Data, &query)
 		checkErr(err)
 		log.Printf("Subscriber fetched msg.Data:%s from subSubjectName:%q", string(msg.Data), msg.Subject)
@@ -73,9 +73,9 @@ func createStream(js nats.JetStreamContext) {
 	}
 }
 
-func reviewQuery(js nats.JetStreamContext, query string) {
-	desQuery := srv.DeserializeQuery(query)
-	query = desQuery.Query
+func reviewQuery(js nats.JetStreamContext, query Query) {
+	desQuery := srv.DeserializeQuery(query.Query)
+	query.Query = desQuery.Query
 	queryJSON, _ := json.Marshal(query)
 	_, err := js.Publish(pubSubjectName, queryJSON)
 	checkErr(err)
