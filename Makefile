@@ -14,8 +14,15 @@ build:
 install:
 	$(HELM) install --create-namespace -n $(NAMESPACE) $(NAME) .
 
+all: build install
+
+rmi:
+	nerdctl rmi -f --namespace k8s.io querylang:v1.1
 ## Uninstall charts
 uninstall:
 	$(HELM) uninstall $(NAME) -n $(NAMESPACE)
+
+all-remove: uninstall rmi
+
 
 .PHONY : help install uninstall
